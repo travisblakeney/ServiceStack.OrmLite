@@ -73,6 +73,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PostgreSQLExpressionsTest",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlServerExpressionsTets", "SqlServerExpressionsTets\SqlServerExpressionsTets.csproj", "{19825530-1D25-4528-AB6D-E236809A7F34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.OrmLite.ModelConfiguration.Tests", "ServiceStack.OrmLite.ModelConfiguration.Tests\ServiceStack.OrmLite.ModelConfiguration.Tests.csproj", "{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -794,6 +796,31 @@ Global
 		{19825530-1D25-4528-AB6D-E236809A7F34}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{19825530-1D25-4528-AB6D-E236809A7F34}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
 		{19825530-1D25-4528-AB6D-E236809A7F34}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Default|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Default|Any CPU.Build.0 = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Default|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Default|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Default|x86.ActiveCfg = Debug|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.MonoTouch|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.MonoTouch|Any CPU.Build.0 = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.MonoTouch|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.MonoTouch|Mixed Platforms.Build.0 = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.MonoTouch|x86.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.Release|x86.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.STATIC_ONLY NO_EXPRESSIONS|Mixed Platforms.Build.0 = Release|Any CPU
+		{BAC95FC6-7733-4A18-A484-9CA2F67F0E8E}.STATIC_ONLY NO_EXPRESSIONS|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

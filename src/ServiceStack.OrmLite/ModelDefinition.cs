@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
+using ServiceStack.OrmLite.ModelConfiguration;
 
 namespace ServiceStack.OrmLite
 {
@@ -65,6 +66,15 @@ namespace ServiceStack.OrmLite
 		}
 
 		public List<CompositeIndexAttribute> CompositeIndexes { get; set; }
+
+        public void ParseModelConfig(IModelConfigExpression config)
+        {
+            // do something here
+
+            ConfigExpression = config;
+        }
+
+        public IModelConfigExpression ConfigExpression { get; private set; }
 	}
 
 

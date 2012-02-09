@@ -13,13 +13,37 @@ namespace ServiceStack.OrmLite.ModelConfiguration
 
     public class ModelConfigContext
     {
+        public Dictionary<Type, IModelConfigExpression> ConfigExpressions { get; private set; }
+
+        public ModelConfigContext()
+        {
+            ConfigExpressions = new Dictionary<Type,IModelConfigExpression>();
+        }
+
         public ModelConfigExpression<T> Model<T>()
         {
-            return new ModelConfigExpression<T>();
+            var exp = new ModelConfigExpression<T>();
+
+            // last one wins?
+            if (ConfigExpressions.ContainsKey(typeof(T)))
+            {
+                ConfigExpressions[typeof (T)] = exp;
+            }
+            else
+            {
+                ConfigExpressions.Add(typeof(T), exp);
+            }
+
+            return exp;
         }
     }
 
-    public class ModelConfigExpression<T>
+    public interface IModelConfigExpression
+    {
+        List<ModelPropertyConfigExpression> PropertyExpressions { get; }
+    }
+
+    public class ModelConfigExpression<T> : IModelConfigExpression
     {
         public List<ModelPropertyConfigExpression> PropertyExpressions { get; private set; }
 
