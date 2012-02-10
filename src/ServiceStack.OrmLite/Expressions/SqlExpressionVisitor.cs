@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,6 +71,14 @@ namespace ServiceStack.OrmLite
 			BuildSelectExpression( Visit(fields),false );
 			return this;
 		}
+
+        public virtual SqlExpressionVisitor<T> Include<TProperty>(Expression<Func<T, TProperty>> property)
+        {
+            sep = " ";
+            useFieldName = false;
+            BuildJoinStatement(property);
+            return this;
+        }
 				
 		public virtual SqlExpressionVisitor<T> SelectDistinct<TKey>(Expression<Func<T, TKey>> fields){
 			sep=string.Empty;
@@ -265,8 +274,6 @@ namespace ServiceStack.OrmLite
 			this.insertFields=insertFields;
 			return this;
 		}
-			
-			
 		
 		public virtual string ToDeleteRowStatement(){
 			return string.Format("DELETE FROM {0} {1}", 
@@ -832,8 +839,35 @@ namespace ServiceStack.OrmLite
 					fields),
 				OrmLiteConfig.DialectProvider.GetTableNameDelimited(modelDef));
 		}
-		
-		
+
+        private void BuildJoinStatement<TProperty>(Expression<Func<T,TProperty>> exp)
+        {
+            if (exp.Body.NodeType != ExpressionType.MemberAccess)
+                throw new ArgumentException("A Join statement can only work against a member access Expression.");
+
+            // get the propertyname
+            string fileldName = VisitMemberAccess(exp.Body as MemberExpression);
+            string tableName = DiscoverJoinTableName(exp);
+        }
+
+	    private string DiscoverJoinTableName<TProperty>(Expression<Func<T, TProperty>> exp)
+	    {
+	        string tableName;
+
+	        if (exp.Body.Type.GetInterfaces().Any(x => x.Equals(typeof (IEnumerable))))
+	        {
+	            // get the generic type argument
+	            Type arg = exp.Body.Type.GetGenericArguments().FirstOrDefault();
+	            tableName = arg.Name;
+	        }
+	        else
+	        {
+	            tableName = exp.Body.Type.Name;
+	            string prop = Visit(exp);
+	        }
+
+            return tableName;
+	    }
 	}
 	
 }
