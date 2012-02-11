@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
+using ServiceStack.OrmLite.ModelConfiguration;
 
 namespace ServiceStack.OrmLite
 {
@@ -12,6 +13,7 @@ namespace ServiceStack.OrmLite
 	{
 		
 		private string selectExpression= string.Empty;
+	    private string joinExpression = string.Empty;
 		private string whereExpression;
 		private string groupBy= string.Empty;
 		private string havingExpression;
@@ -845,28 +847,52 @@ namespace ServiceStack.OrmLite
             if (exp.Body.NodeType != ExpressionType.MemberAccess)
                 throw new ArgumentException("A Join statement can only work against a member access Expression.");
 
+            // do we have a property expression in the model definition that matches this MemberAccessExpression?
+            var propertyExpression = FindMatchingConfigExpression(exp);
+
             // get the propertyname
             string fileldName = VisitMemberAccess(exp.Body as MemberExpression);
-            string tableName = DiscoverJoinTableName(exp);
+
+            // get the tablename
+            Type tableType = DiscoverJoinTableType(exp);
+            string tableName = tableType.Name;
+
         }
 
-	    private string DiscoverJoinTableName<TProperty>(Expression<Func<T, TProperty>> exp)
+        private ModelPropertyConfigExpression FindMatchingConfigExpression<TProperty>(Expression<Func<T,TProperty>> exp)
+        {
+            if (modelDef.ConfigExpression != null)
+            {
+                return modelDef.ConfigExpression.PropertyExpressions
+                    .FirstOrDefault(x => x.Expression == exp.Body as MemberExpression);
+            }
+
+            return null;
+        }
+
+	    private Type DiscoverJoinTableType<TProperty>(Expression<Func<T, TProperty>> exp)
 	    {
-	        string tableName;
+	        Type tableType = null;
 
 	        if (exp.Body.Type.GetInterfaces().Any(x => x.Equals(typeof (IEnumerable))))
 	        {
-	            // get the generic type argument
-	            Type arg = exp.Body.Type.GetGenericArguments().FirstOrDefault();
-	            tableName = arg.Name;
+                // is it generic?
+                if (exp.Body.Type.IsGenericType)
+                {
+                    var typeDefinition = exp.Body.Type.GetGenericTypeDefinition();
+                    if (typeDefinition.GetInterfaces().Any(x => x.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+                    {
+                        // get the generic type argument
+                        tableType = exp.Body.Type.GetGenericArguments().First();
+                    }
+                }
 	        }
 	        else
 	        {
-	            tableName = exp.Body.Type.Name;
-	            string prop = Visit(exp);
+	            tableType = exp.Body.Type;
 	        }
 
-            return tableName;
+            return tableType;
 	    }
 	}
 	

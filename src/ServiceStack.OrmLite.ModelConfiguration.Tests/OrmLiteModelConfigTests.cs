@@ -24,8 +24,9 @@ namespace ServiceStack.OrmLite.ModelConfiguration.Tests
  
         [Test]
         public void JoinSelect_ReturnsObject_FromMultipleTables()
-        {
+         {
             ModelConfigContext context = GetModelConfigContext();
+
             var command = new FakeDbCommand();
             command.Select<User>(x => x.Include(u => u.Roles));
 

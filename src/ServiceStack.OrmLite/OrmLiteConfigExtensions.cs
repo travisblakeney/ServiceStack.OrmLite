@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Threading;
 using ServiceStack.Common.Extensions;
 using ServiceStack.DataAnnotations;
+using ServiceStack.OrmLite.ModelConfiguration;
 using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite
@@ -49,15 +50,20 @@ namespace ServiceStack.OrmLite
 			typeModelDefinitionMap = new Dictionary<Type, ModelDefinition>();
 		}
 
-		internal static ModelDefinition GetModelDefinition(this Type modelType)
-		{
+        internal static ModelDefinition GetModelDefinition(this Type modelType)
+        {
+            return modelType.GetModelDefinition(null);
+        }
+
+        internal static ModelDefinition GetModelDefinition(this Type modelType, IModelConfigExpression config)
+        {
             ModelDefinition modelDef;
             
             if (typeModelDefinitionMap.TryGetValue(modelType, out modelDef))
                 return modelDef;
 
             var modelAliasAttr = modelType.FirstAttribute<AliasAttribute>();
-		    var schemaAttr = modelType.FirstAttribute<SchemaAttribute>();
+            var schemaAttr = modelType.FirstAttribute<SchemaAttribute>();
             modelDef = new ModelDefinition
             {
                 ModelType = modelType,
@@ -65,6 +71,11 @@ namespace ServiceStack.OrmLite
                 Alias = modelAliasAttr != null ? modelAliasAttr.Name : null,
                 Schema = schemaAttr != null ? schemaAttr.Name : null
             };
+
+            if (config != null)
+            {
+                modelDef.ParseModelConfig(config);
+            }
 
             modelDef.CompositeIndexes.AddRange(
                 modelType.GetCustomAttributes(typeof(CompositeIndexAttribute), true).ToList()
@@ -78,15 +89,15 @@ namespace ServiceStack.OrmLite
             var i = 0;
             foreach (var propertyInfo in objProperties)
             {
-				if (propertyInfo.FirstAttribute<IgnoreAttribute>()!=null) continue;
-				var sequenceAttr = propertyInfo.FirstAttribute<SequenceAttribute>();
-				var computeAttr= propertyInfo.FirstAttribute<ComputeAttribute>();
-				var pkAttribute = propertyInfo.FirstAttribute<PrimaryKeyAttribute>();
-				var decimalAttribute = propertyInfo.FirstAttribute<DecimalLengthAttribute>();
+                if (propertyInfo.FirstAttribute<IgnoreAttribute>() != null) continue;
+                var sequenceAttr = propertyInfo.FirstAttribute<SequenceAttribute>();
+                var computeAttr = propertyInfo.FirstAttribute<ComputeAttribute>();
+                var pkAttribute = propertyInfo.FirstAttribute<PrimaryKeyAttribute>();
+                var decimalAttribute = propertyInfo.FirstAttribute<DecimalLengthAttribute>();
                 var isFirst = i++ == 0;
 
                 var isPrimaryKey = propertyInfo.Name == IdField || (!hasIdField && isFirst)
-					|| pkAttribute != null;
+                    || pkAttribute != null;
 
                 var isNullableType = IsNullableType(propertyInfo.PropertyType);
 
@@ -109,10 +120,10 @@ namespace ServiceStack.OrmLite
                 var defaultValueAttr = propertyInfo.FirstAttribute<DefaultAttribute>();
 
                 var referencesAttr = propertyInfo.FirstAttribute<ReferencesAttribute>();
-				
-				if(decimalAttribute != null  && stringLengthAttr==null)
-					stringLengthAttr= new StringLengthAttribute(decimalAttribute.Precision);
-				
+
+                if (decimalAttribute != null && stringLengthAttr == null)
+                    stringLengthAttr = new StringLengthAttribute(decimalAttribute.Precision);
+
                 var fieldDefinition = new FieldDefinition
                 {
                     Name = propertyInfo.Name,
@@ -131,18 +142,18 @@ namespace ServiceStack.OrmLite
                     QuoteValueFn = OrmLiteConfig.DialectProvider.GetQuotedValue,
                     GetValueFn = propertyInfo.GetPropertyGetterFn(),
                     SetValueFn = propertyInfo.GetPropertySetterFn(),
-					Sequence= sequenceAttr!=null?sequenceAttr.Name:string.Empty,
-					IsComputed= computeAttr!=null,
-					ComputeExpression=  computeAttr!=null? computeAttr.Expression: string.Empty,
-					Scale = decimalAttribute != null ? decimalAttribute.Scale : (int?)null,
+                    Sequence = sequenceAttr != null ? sequenceAttr.Name : string.Empty,
+                    IsComputed = computeAttr != null,
+                    ComputeExpression = computeAttr != null ? computeAttr.Expression : string.Empty,
+                    Scale = decimalAttribute != null ? decimalAttribute.Scale : (int?)null,
                 };
 
                 modelDef.FieldDefinitions.Add(fieldDefinition);
             }
 
-		    modelDef.SqlSelectAllFromTable = "SELECT {0} FROM {1} ".Fmt(OrmLiteConfig.DialectProvider.GetColumnNames(modelDef),
-		                                                                OrmLiteConfig.DialectProvider.GetTableNameDelimited(
-		                                                                    modelDef));
+            modelDef.SqlSelectAllFromTable = "SELECT {0} FROM {1} ".Fmt(OrmLiteConfig.DialectProvider.GetColumnNames(modelDef),
+                                                                        OrmLiteConfig.DialectProvider.GetTableNameDelimited(
+                                                                            modelDef));
             Dictionary<Type, ModelDefinition> snapshot, newCache;
             do
             {
@@ -154,7 +165,6 @@ namespace ServiceStack.OrmLite
                 Interlocked.CompareExchange(ref typeModelDefinitionMap, newCache, snapshot), snapshot));
 
             return modelDef;
-		}
-
+        }
 	}
 }

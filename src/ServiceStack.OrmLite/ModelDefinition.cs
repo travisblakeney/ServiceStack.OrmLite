@@ -69,8 +69,6 @@ namespace ServiceStack.OrmLite
 
         public void ParseModelConfig(IModelConfigExpression config)
         {
-            // do something here
-
             ConfigExpression = config;
         }
 
