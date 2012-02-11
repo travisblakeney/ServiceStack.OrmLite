@@ -860,9 +860,11 @@ namespace ServiceStack.OrmLite
             // account for a many to many
             if (propertyExpression != null && propertyExpression.GetType() == typeof(EnumerablePropertyConfigExpression<T,TProperty>))
             {
-                
+                // get the underlying IEnumberable<T> T
+                var modelType = propertyExpression.Property.PropertyType
+                    .GetGenericTypeDefinition()
+                    .GetGenericArguments().FirstOrDefault();
             }
-
         }
 
         private ModelPropertyConfigExpression FindMatchingConfigExpression<TProperty>(Expression<Func<T,TProperty>> exp)
@@ -901,6 +903,5 @@ namespace ServiceStack.OrmLite
             return tableType;
 	    }
 	}
-	
 }
 
