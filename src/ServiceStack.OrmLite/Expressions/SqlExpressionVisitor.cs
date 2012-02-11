@@ -857,6 +857,12 @@ namespace ServiceStack.OrmLite
             Type tableType = DiscoverJoinTableType(exp);
             string tableName = tableType.Name;
 
+            // account for a many to many
+            if (propertyExpression != null && propertyExpression.GetType() == typeof(EnumerablePropertyConfigExpression<T,TProperty>))
+            {
+                
+            }
+
         }
 
         private ModelPropertyConfigExpression FindMatchingConfigExpression<TProperty>(Expression<Func<T,TProperty>> exp)
@@ -864,7 +870,7 @@ namespace ServiceStack.OrmLite
             if (modelDef.ConfigExpression != null)
             {
                 return modelDef.ConfigExpression.PropertyExpressions
-                    .FirstOrDefault(x => x.Expression == exp.Body as MemberExpression);
+                    .FirstOrDefault(x => x.Property == ((MemberExpression)exp.Body).Member);
             }
 
             return null;

@@ -27,6 +27,9 @@ namespace ServiceStack.OrmLite.ModelConfiguration.Tests
          {
             ModelConfigContext context = GetModelConfigContext();
 
+            Type modelType = context.ConfigExpressions.First().Key;
+            modelType.GetModelDefinition(context.ConfigExpressions.First().Value);
+
             var command = new FakeDbCommand();
             command.Select<User>(x => x.Include(u => u.Roles));
 

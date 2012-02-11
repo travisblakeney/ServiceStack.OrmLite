@@ -94,7 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbTypes.cs" />
-    <Compile Include="ModelConfiguration\ModelDefinitionExtenions.cs" />
+    <Compile Include="ModelConfiguration\ModelDefinitionExtensions.cs" />
     <Compile Include="ModelConfiguration\OrmLiteModelConfig.cs" />
     <Compile Include="ModelConfiguration\TestModelConfig.cs" />
     <Compile Include="ModelConfiguration\User.cs" />

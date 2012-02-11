@@ -52,10 +52,10 @@ namespace ServiceStack.OrmLite.ModelConfiguration
             PropertyExpressions = new List<ModelPropertyConfigExpression>();
         }
 
-        public ModelConfigExpression<T> HasMany(Expression<Func<T, object>> expression)
+        public ModelConfigExpression<T> HasMany<TProperty>(Expression<Func<T, IEnumerable<TProperty>>> expression)
         {
-            // create and add an EnumerablePropertyConfigExpression
-
+            // add an EnumerablePropertyConfigExpression
+            PropertyExpressions.Add(new EnumerablePropertyConfigExpression<T, TProperty>(expression));
             return this;
         }
     }
@@ -68,16 +68,17 @@ namespace ServiceStack.OrmLite.ModelConfiguration
             Expression = expression;
         }
 
-        public Type Type { get; private set; }
+        public Type Type { get; protected set; }
         public PropertyInfo Property { get; set; }
-        public MemberExpression Expression { get; private set; }
+        public MemberExpression Expression { get; protected set; }
     }
 
-    public class EnumerablePropertyConfigExpression<T> : ModelPropertyConfigExpression
+    public class EnumerablePropertyConfigExpression<T,TProperty> : ModelPropertyConfigExpression
     {
-        public EnumerablePropertyConfigExpression(Expression<Func<T, IEnumerable>> expression) : base(typeof(T), expression as MemberExpression)
+        public EnumerablePropertyConfigExpression(Expression<Func<T, IEnumerable<TProperty>>> expression) : base(typeof(TProperty), expression.Body as MemberExpression)
         {
-            
+            // cast the expression.Body to a MemberExpression to get the property info object
+            Property = ((MemberExpression) expression.Body).Member as PropertyInfo;
         }
     }
 }
