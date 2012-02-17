@@ -541,7 +541,7 @@ namespace ServiceStack.OrmLite
 		
 		protected virtual string  VisitMemberAccess(MemberExpression m)
         {
-			if(m.Expression != null){
+			if(m.Expression != null && m.Expression.Type== typeof(T)){
 				string o = GetFieldName( m.Member.Name );
 				return o;
 			}
@@ -670,14 +670,23 @@ namespace ServiceStack.OrmLite
 			    var lambda = Expression.Lambda<Func<object>>(member);
     			var getter = lambda.Compile();
 				
-				var inArgs = getter() as IList<Object>;
-				
-				
+				var inArgs = getter() as object[];
+					
 				StringBuilder sIn = new StringBuilder();
 				foreach(Object e in inArgs ){
-					sIn.AppendFormat("{0}{1}",
+					if(e.GetType().ToString()!="System.Collections.Generic.List`1[System.Object]"){
+						sIn.AppendFormat("{0}{1}",
 					                 sIn.Length>0 ? ",":"",
 					                 OrmLiteConfig.DialectProvider.GetQuotedValue(e, e.GetType()) );
+					}
+					else{
+						var listArgs= e as IList<Object>;
+						foreach(Object el in listArgs){
+							sIn.AppendFormat("{0}{1}",
+					                 sIn.Length>0 ? ",":"",
+					                 OrmLiteConfig.DialectProvider.GetQuotedValue(el, el.GetType()) );
+						}
+					}
 				}
 												
 				return string.Format("{0} {1} ({2})", r, m.Method.Name,  sIn.ToString() );
