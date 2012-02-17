@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbTypes.cs" />
+    <Compile Include="Expressions\JoinBuilder.cs" />
     <Compile Include="ModelConfiguration\ModelDefinitionExtensions.cs" />
     <Compile Include="ModelConfiguration\OrmLiteModelConfig.cs" />
     <Compile Include="ModelConfiguration\TestModelConfig.cs" />

@@ -6,6 +6,9 @@
         {
             context.Model<User>()
                 .HasMany(u => u.Roles);
+
+            context.Model<Role>()
+                .HasMany(r => r.Users);
         }
     }
 }

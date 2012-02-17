@@ -287,6 +287,7 @@ namespace ServiceStack.OrmLite
 			StringBuilder sql = new StringBuilder();
 			
 			sql.Append(	SelectExpression );
+		    sql.Append(JoinExpression);
 			sql.Append( string.IsNullOrEmpty(WhereExpression)?
 			           "":
 			           "\n"+WhereExpression);
@@ -317,6 +318,12 @@ namespace ServiceStack.OrmLite
 				selectExpression=value;
 			}
 		}
+
+	    public string JoinExpression
+	    {
+            get { return joinExpression; }
+            set { joinExpression = value; }
+	    }
 		
 		public string WhereExpression{
 			get{
@@ -847,61 +854,9 @@ namespace ServiceStack.OrmLite
             if (exp.Body.NodeType != ExpressionType.MemberAccess)
                 throw new ArgumentException("A Join statement can only work against a member access Expression.");
 
-            // do we have a property expression in the model definition that matches this MemberAccessExpression?
-            var propertyExpression = FindMatchingConfigExpression(exp);
-
-            // get the propertyname
-            string fileldName = VisitMemberAccess(exp.Body as MemberExpression);
-
-            // get the tablename
-            Type tableType = DiscoverJoinTableType(exp);
-            string tableName = tableType.Name;
-
-            // account for a many to many
-            if (propertyExpression != null && propertyExpression.GetType() == typeof(EnumerablePropertyConfigExpression<T,TProperty>))
-            {
-                // get the underlying IEnumberable<T> T
-                var modelType = propertyExpression.Property.PropertyType
-                    .GetGenericTypeDefinition()
-                    .GetGenericArguments().FirstOrDefault();
-            }
+            var builder = new JoinBuilder(modelDef);
+            JoinExpression = builder.BuildJoinStatement(exp);
         }
-
-        private ModelPropertyConfigExpression FindMatchingConfigExpression<TProperty>(Expression<Func<T,TProperty>> exp)
-        {
-            if (modelDef.ConfigExpression != null)
-            {
-                return modelDef.ConfigExpression.PropertyExpressions
-                    .FirstOrDefault(x => x.Property == ((MemberExpression)exp.Body).Member);
-            }
-
-            return null;
-        }
-
-	    private Type DiscoverJoinTableType<TProperty>(Expression<Func<T, TProperty>> exp)
-	    {
-	        Type tableType = null;
-
-	        if (exp.Body.Type.GetInterfaces().Any(x => x.Equals(typeof (IEnumerable))))
-	        {
-                // is it generic?
-                if (exp.Body.Type.IsGenericType)
-                {
-                    var typeDefinition = exp.Body.Type.GetGenericTypeDefinition();
-                    if (typeDefinition.GetInterfaces().Any(x => x.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
-                    {
-                        // get the generic type argument
-                        tableType = exp.Body.Type.GetGenericArguments().First();
-                    }
-                }
-	        }
-	        else
-	        {
-	            tableType = exp.Body.Type;
-	        }
-
-            return tableType;
-	    }
 	}
 }
 

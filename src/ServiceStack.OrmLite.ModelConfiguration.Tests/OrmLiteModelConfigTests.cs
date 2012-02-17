@@ -24,16 +24,19 @@ namespace ServiceStack.OrmLite.ModelConfiguration.Tests
  
         [Test]
         public void JoinSelect_ReturnsObject_FromMultipleTables()
-         {
+        {
             ModelConfigContext context = GetModelConfigContext();
 
-            Type modelType = context.ConfigExpressions.First().Key;
-            modelType.GetModelDefinition(context.ConfigExpressions.First().Value);
+            foreach (var keyValue in context.ConfigExpressions)
+            {
+                Type modelType = keyValue.Key;
+                modelType.GetModelDefinition(keyValue.Value);
+            }
 
             var command = new FakeDbCommand();
             command.Select<User>(x => x.Include(u => u.Roles));
 
-            Assert.Equals(command.CommandText, "SELECT * FROM User JOIN Roles ON User.RoleId = Role.RoleId");
+            Assert.Equals(command.CommandText, "SELECT * FROM User JOIN Role on User.RoleId = Role.RoleId");
         }
 
         private static ModelConfigContext GetModelConfigContext()
