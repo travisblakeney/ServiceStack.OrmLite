@@ -25,32 +25,28 @@ namespace ServiceStack.OrmLite
 
             if (propertyExpression != null)
             {
-                // get the propertyname
-                var member = exp.Body as MemberExpression;
+                Type joinTable = DiscoverJoinTableType(exp);
 
-                // get the tablename
-                Type tableType = DiscoverJoinTableType(exp);
-                string tableName = tableType.Name;
-
-                var expressionType = propertyExpression.GetType();
-
-                Type enumType = typeof(EnumerablePropertyConfigExpression<,>).MakeGenericType(typeof(TModel), tableType);
-
-                // account for a many to many
-                if (expressionType.IsGenericType && expressionType == enumType)
+                if (IsEnumarablePropertyExpression(propertyExpression, typeof(TModel), joinTable))
                 {
-                    // get the underlying T of the IEnumerable<T>
-                    var modelType = propertyExpression.Property.PropertyType
-                        .GetGenericArguments().FirstOrDefault();
+                    var tableDef = joinTable.GetModelDefinition(null);
 
-                    var endDef = modelType.GetModelDefinition(null);
-
-                    if (endDef != null && endDef.ConfigExpression != null)
+                    if (tableDef != null && tableDef.ConfigExpression != null)
                     {
-                        var matchedExpression = FindMatchingModelProperty(endDef, modelType);
+                        var matchedExpression = FindMatchingModelProperty(tableDef, typeof(TModel));
                         if (matchedExpression != null)
                         {
-                            
+                            if (IsEnumarablePropertyExpression(matchedExpression, joinTable, typeof(TModel)))
+                            {
+                                // we have a many-to-many
+                                var modelDef = typeof (TModel).GetModelDefinition(null);
+                                string joinTableName = modelDef.Name + tableDef.Name;
+                                string leftId = modelDef.Name + "Id";
+                                string rightId = tableDef.Name + "Id";
+                                
+                                // JOIN UserRole on User.UserId = UserRole.UserId JOIN Role ON UserRole.RoleId = Role.RoleId
+                                _joinStatement = string.Format(" JOIN {0} ON {1}.{2} = {0}.{2} JOIN {3} ON {0}.{4} = {3}.{4}", joinTableName, modelDef.Name, leftId, tableDef.Name, rightId);
+                            }
                         }
                     }
                 }
@@ -70,6 +66,13 @@ namespace ServiceStack.OrmLite
             return null;
         }
 
+        private bool IsEnumarablePropertyExpression(ModelPropertyConfigExpression propertyExpression, Type modelType, Type joinTable)
+        {
+            var expressionType = propertyExpression.GetType();
+            Type enumType = typeof(EnumerablePropertyConfigExpression<,>).MakeGenericType(modelType, joinTable);
+            return expressionType.IsGenericType && expressionType == enumType;
+        }
+        
         private ModelPropertyConfigExpression FindMatchingModelProperty(ModelDefinition modelDef, Type leftSideType)
         {
             return modelDef.ConfigExpression.PropertyExpressions.FirstOrDefault(x => x.Type == leftSideType);
