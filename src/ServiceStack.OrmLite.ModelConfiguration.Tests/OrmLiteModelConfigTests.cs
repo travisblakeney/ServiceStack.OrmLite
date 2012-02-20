@@ -82,7 +82,7 @@ namespace ServiceStack.OrmLite.ModelConfiguration.Tests
 
         public IDataReader ExecuteReader()
         {
-            throw new NotImplementedException();
+            return new DataTableReader(new DataTable("User"));
         }
 
         public object ExecuteScalar()
