@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using NUnit.Framework;
@@ -48,6 +49,32 @@ namespace ServiceStack.OrmLite.ModelConfiguration.Tests
             config.Load(context);
 
             return context;
+        }
+    }
+
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; }
+        public List<Role> Roles { get; set; }
+    }
+
+    public class Role
+    {
+        public int Id { get; set; }
+        public string RoleName { get; set; }
+        public List<User> Users;
+    }
+
+    public class TestModelConfig : OrmLiteModelConfig
+    {
+        public override void Load(ModelConfigContext context)
+        {
+            context.Model<User>()
+                .HasMany(u => u.Roles);
+
+            context.Model<Role>()
+                .HasMany(r => r.Users);
         }
     }
 

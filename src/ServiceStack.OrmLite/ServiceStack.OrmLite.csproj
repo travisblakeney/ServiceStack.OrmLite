@@ -97,8 +97,6 @@
     <Compile Include="Expressions\JoinBuilder.cs" />
     <Compile Include="ModelConfiguration\ModelDefinitionExtensions.cs" />
     <Compile Include="ModelConfiguration\OrmLiteModelConfig.cs" />
-    <Compile Include="ModelConfiguration\TestModelConfig.cs" />
-    <Compile Include="ModelConfiguration\User.cs" />
     <Compile Include="PropertyInvoker.cs" />
     <Compile Include="FieldDefinition.cs" />
     <Compile Include="IDbConnectionFactory.cs" />
