@@ -85,6 +85,5 @@ namespace ServiceStack.OrmLite
 		public string ComputeExpression{
 			get;set;
 		}
-		
 	}
 }

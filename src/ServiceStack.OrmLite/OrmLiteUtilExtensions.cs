@@ -13,7 +13,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Text;
+using ServiceStack.Common.Extensions;
 
 namespace ServiceStack.OrmLite
 {
@@ -63,13 +65,26 @@ namespace ServiceStack.OrmLite
 	    public static string GetColumnNames(this ModelDefinition modelDef)
 	    {
             var sqlColumns = new StringBuilder();
-	        modelDef.FieldDefinitions.ForEach(x =>
+	        modelDef.FieldDefinitions
+                .Where(x => !FieldIsInJoinedTable(modelDef, x))
+                .ForEach(x =>
 	                                          sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
 	                                                                  OrmLiteConfig.DialectProvider.GetNameDelimited(
 	                                                                      x.FieldName)));
 
 	        return sqlColumns.ToString();
 	    }
+
+        private static bool FieldIsInJoinedTable(ModelDefinition modelDef, FieldDefinition field)
+        {
+            if (modelDef.ConfigExpression != null)
+            {
+                return modelDef.ConfigExpression.PropertyExpressions.Any(x => 
+                    x.Property != null && x.Property.PropertyType == field.FieldType);
+            }
+
+            return false;
+        }
 
 	    internal static string GetIdsInSql(this IEnumerable idValues)
 		{

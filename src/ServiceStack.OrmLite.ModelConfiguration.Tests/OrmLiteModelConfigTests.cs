@@ -36,7 +36,8 @@ namespace ServiceStack.OrmLite.ModelConfiguration.Tests
             var command = new FakeDbCommand();
             command.Select<User>(x => x.Include(u => u.Roles));
 
-            Assert.Equals(command.CommandText, "SELECT * FROM User JOIN Role on User.RoleId = Role.RoleId");
+            string expected = "SELECT \"Id\" ,\"Username\"  \nFROM \"User\" JOIN UserRole ON User.UserId = UserRole.UserId JOIN Role ON UserRole.RoleId = Role.RoleId";
+            Assert.AreEqual(command.CommandText, expected);
         }
 
         private static ModelConfigContext GetModelConfigContext()
