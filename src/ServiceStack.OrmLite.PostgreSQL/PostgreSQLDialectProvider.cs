@@ -20,7 +20,6 @@ namespace ServiceStack.OrmLite.PostgreSQL
 			base.DateTimeColumnDefinition = "timestamp";
 			base.DecimalColumnDefinition = "numeric(38,6)";
 			base.GuidColumnDefinition = "uuid";
-			base.DefaultStringLength = 255;
 			base.ParamString = ":";
 			base.BlobColumnDefinition = "bytea";
 			base.RealColumnDefinition = "double precision";
@@ -57,12 +56,12 @@ namespace ServiceStack.OrmLite.PostgreSQL
 				}
 				else if (!DbTypes.ColumnTypeMap.TryGetValue(fieldType, out fieldDefinition))
 				{
-					fieldDefinition = this.GetUndefinedColumnDefintion(fieldType);
+					fieldDefinition = GetUndefinedColumnDefinition(fieldType,null);
 				}
 			}
 
 			var sql = new StringBuilder();
-			sql.AppendFormat("{0} {1}", GetNameDelimited(fieldName), fieldDefinition);
+			sql.AppendFormat("{0} {1}", GetQuotedColumnName(fieldName), fieldDefinition);
 
 			if (isPrimaryKey)
 			{
@@ -90,7 +89,7 @@ namespace ServiceStack.OrmLite.PostgreSQL
 
 		public override string EscapeParam(object paramValue)
 		{
-			return paramValue.ToString().Replace("'", @"\'");
+			return paramValue.ToString().Replace("'", @"''");
 		}
 
 		public override IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options)
@@ -124,16 +123,6 @@ namespace ServiceStack.OrmLite.PostgreSQL
 			return base.ConvertDbValue(value, type);
 		}
 
-		public override string GetTableNameDelimited(ModelDefinition modelDef)
-		{
-			return string.Format("\"{0}\"", modelDef.ModelName);
-		}
-
-		public override string GetNameDelimited(string columnName)
-		{
-			return string.Format("\"{0}\"", columnName);
-		}
-
 		public override long GetLastInsertId(IDbCommand command)
 		{
 			command.CommandText = "SELECT LASTVAL()";
@@ -142,11 +131,21 @@ namespace ServiceStack.OrmLite.PostgreSQL
 				return default(long);
 			return Convert.ToInt64(result);
 		}
-
-
+		
 		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
 		{
 			return new PostgreSQLExpressionVisitor<T>();
+		}
+
+		public override bool DoesTableExist(IDbCommand dbCmd, string tableName)
+		{
+			var sql = "SELECT COUNT(*) FROM pg_class WHERE relname = {0}"
+				.SqlFormat(tableName);
+
+			dbCmd.CommandText = sql;
+			var result = dbCmd.GetLongScalar();
+
+			return result > 0;
 		}
 	}
 }

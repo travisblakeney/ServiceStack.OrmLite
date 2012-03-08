@@ -279,7 +279,7 @@ namespace ServiceStack.OrmLite
 		
 		public virtual string ToDeleteRowStatement(){
 			return string.Format("DELETE FROM {0} {1}", 
-			                     OrmLiteConfig.DialectProvider.GetTableNameDelimited(modelDef),
+			                     OrmLiteConfig.DialectProvider.GetQuotedTableName(modelDef),
 			                     WhereExpression);
 		}
 		
@@ -541,7 +541,9 @@ namespace ServiceStack.OrmLite
 		
 		protected virtual string  VisitMemberAccess(MemberExpression m)
         {
-			if(m.Expression != null && m.Expression.Type== typeof(T)){
+			if(m.Expression != null && 
+			   m.Expression.NodeType==ExpressionType.Parameter 
+			   && m.Expression.Type== typeof(T)){
 				string o = GetFieldName( m.Member.Name );
 				return o;
 			}
@@ -694,7 +696,7 @@ namespace ServiceStack.OrmLite
 				return string.Format("{0} DESC", r);
 			case "As":
 				return string.Format("{0} As {1}", r, 
-					OrmLiteConfig.DialectProvider.GetNameDelimited( RemoveQuote( args[0].ToString() ) ) );
+					OrmLiteConfig.DialectProvider.GetQuotedColumnName( RemoveQuote( args[0].ToString() ) ) );
 			case "ToString":
 				return r.ToString();
 			default:
@@ -789,7 +791,7 @@ namespace ServiceStack.OrmLite
 			if(useFieldName){
 				FieldDefinition fd = modelDef.FieldDefinitions.FirstOrDefault(x=>x.Name==name);
 				string fn = fd!=default(FieldDefinition)? fd.FieldName:name;
-				return OrmLiteConfig.DialectProvider.GetNameDelimited(fn);
+				return OrmLiteConfig.DialectProvider.GetQuotedColumnName(fn);
 			}
 			else{
 				return name;
@@ -812,7 +814,7 @@ namespace ServiceStack.OrmLite
 				modelDef.FieldDefinitions.
 					FirstOrDefault(x=>
 						OrmLiteConfig.DialectProvider.
-						GetNameDelimited(x.FieldName)==quotedExp);
+						GetQuotedColumnName(x.FieldName) == quotedExp);
 			return (fd!=default(FieldDefinition));
 		}
 		
@@ -855,7 +857,7 @@ namespace ServiceStack.OrmLite
 				(string.IsNullOrEmpty(fields)?
 					OrmLiteConfig.DialectProvider.GetColumnNames(modelDef):
 					fields),
-				OrmLiteConfig.DialectProvider.GetTableNameDelimited(modelDef));
+				OrmLiteConfig.DialectProvider.GetQuotedTableName(modelDef));
 		}
 
         private void BuildJoinStatement<TProperty>(Expression<Func<T,TProperty>> exp)

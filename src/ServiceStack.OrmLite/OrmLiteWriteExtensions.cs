@@ -65,42 +65,52 @@ namespace ServiceStack.OrmLite
                 DropTable(dbCmd, modelDef);
             }
 
+        	var dialectProvider = OrmLiteConfig.DialectProvider;
+
             try
             {
-                ExecuteSql(dbCmd, OrmLiteConfig.DialectProvider.ToCreateTableStatement(modelType));
+				var tableName = dialectProvider.NamingStrategy.GetTableName(modelDef.ModelName);
+				var tableExists = dialectProvider.DoesTableExist(dbCmd, tableName);
+				if (!tableExists)
+				{
+					ExecuteSql(dbCmd, dialectProvider.ToCreateTableStatement(modelType));
 
-                var sqlIndexes = OrmLiteConfig.DialectProvider.ToCreateIndexStatements(modelType);
-                foreach (var sqlIndex in sqlIndexes)
-                {
-                    try
-                    {
-                        dbCmd.ExecuteSql(sqlIndex);
-                    }
-                    catch (Exception exIndex)
-                    {
-                        if (IgnoreAlreadyExistsError(exIndex))
-                        {
-                            Log.DebugFormat("Ignoring existing index '{0}': {1}", sqlIndex, exIndex.Message);
-                            continue;
-                        }
-                        throw;
-                    }
-                }
-				
-				var sequences = OrmLiteConfig.DialectProvider.ToCreateSequenceStatements(modelType);
-				foreach( var seq in sequences) {
-					
-					try{
-						dbCmd.ExecuteSql(seq);
+					var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
+					foreach (var sqlIndex in sqlIndexes)
+					{
+						try
+						{
+							dbCmd.ExecuteSql(sqlIndex);
+						}
+						catch (Exception exIndex)
+						{
+							if (IgnoreAlreadyExistsError(exIndex))
+							{
+								Log.DebugFormat("Ignoring existing index '{0}': {1}", sqlIndex, exIndex.Message);
+								continue;
+							}
+							throw;
+						}
 					}
-					catch (Exception ex){
-						if (IgnoreAlreadyExistsGeneratorError(ex))
-                        {
-                            Log.DebugFormat("Ignoring existing generator '{0}': {1}", seq, ex.Message);
-                            continue;
-                        }
-                        throw;
-					}
+
+					var sequences = dialectProvider.ToCreateSequenceStatements(modelType);
+					foreach (var seq in sequences)
+					{
+
+						try
+						{
+							dbCmd.ExecuteSql(seq);
+						}
+						catch (Exception ex)
+						{
+							if (IgnoreAlreadyExistsGeneratorError(ex))
+							{
+								Log.DebugFormat("Ignoring existing generator '{0}': {1}", seq, ex.Message);
+								continue;
+							}
+							throw;
+						}
+					}					
 				}
             }
             catch (Exception ex)
@@ -124,7 +134,7 @@ namespace ServiceStack.OrmLite
         {
             try
             {
-                dbCmd.ExecuteSql(string.Format("DROP TABLE {0};", OrmLiteConfig.DialectProvider.GetTableNameDelimited(modelDef)));
+                dbCmd.ExecuteSql(string.Format("DROP TABLE {0};", OrmLiteConfig.DialectProvider.GetQuotedTableName(modelDef)));
             }
             catch (Exception )
 
@@ -208,7 +218,12 @@ namespace ServiceStack.OrmLite
 			}
 		}
 
-        
+        public static IDbCommand CreateUpdateStatement<T>(this IDbConnection connection, T obj)
+            where T : new()
+        {
+            return OrmLiteConfig.DialectProvider.CreateParameterizedUpdateStatement(obj, connection);
+        }
+
 		public static void Delete<T>(this IDbCommand dbCmd, params T[] objs)
 			where T : new()
 		{
@@ -233,8 +248,8 @@ namespace ServiceStack.OrmLite
             var modelDef = ModelDefinition<T>.Definition;
 
             var sql = string.Format("DELETE FROM {0} WHERE {1} = {2}",
-                                    OrmLiteConfig.DialectProvider.GetTableNameDelimited(modelDef),
-                                    OrmLiteConfig.DialectProvider.GetNameDelimited(modelDef.PrimaryKey.FieldName),
+                                    OrmLiteConfig.DialectProvider.GetQuotedTableName(modelDef),
+                                    OrmLiteConfig.DialectProvider.GetQuotedColumnName(modelDef.PrimaryKey.FieldName),
                                     OrmLiteConfig.DialectProvider.GetQuotedValue(id, id.GetType()));
 
 
@@ -250,8 +265,8 @@ namespace ServiceStack.OrmLite
             var modelDef = ModelDefinition<T>.Definition;
 
             var sql = string.Format("DELETE FROM {0} WHERE {1} IN ({2})",
-                                    OrmLiteConfig.DialectProvider.GetTableNameDelimited(modelDef),
-                                    OrmLiteConfig.DialectProvider.GetNameDelimited(modelDef.PrimaryKey.FieldName),
+                                    OrmLiteConfig.DialectProvider.GetQuotedTableName(modelDef),
+                                    OrmLiteConfig.DialectProvider.GetQuotedColumnName(modelDef.PrimaryKey.FieldName),
                                     sqlIn);
 
             dbCmd.ExecuteSql(sql);
@@ -311,6 +326,18 @@ namespace ServiceStack.OrmLite
 				dbCmd.ExecuteSql(OrmLiteConfig.DialectProvider.ToInsertRowStatement(obj, dbCmd));
 			}
 		}
+
+        public static IDbCommand CreateInsertStatement<T>(this IDbConnection connection, T obj)
+            where T: new()
+        {
+            return OrmLiteConfig.DialectProvider.CreateParameterizedInsertStatement(obj, connection);
+        }
+
+        public static void ReparameterizeInsert<T>(this IDbCommand command, T obj)
+            where T : new()
+        {
+            OrmLiteConfig.DialectProvider.ReParameterizeInsertStatement(obj, command);
+        }
 
         public static void Save<T>(this IDbCommand dbCmd, params T[] objs)
             where T : new()

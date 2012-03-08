@@ -69,7 +69,7 @@ namespace ServiceStack.OrmLite
                 .Where(x => !FieldIsInJoinedTable(modelDef, x))
                 .ForEach(x =>
 	                                          sqlColumns.AppendFormat("{0}{1} ", sqlColumns.Length > 0 ? "," : "",
-	                                                                  OrmLiteConfig.DialectProvider.GetNameDelimited(
+	                                                                  OrmLiteConfig.DialectProvider.GetQuotedColumnName(
 	                                                                      x.FieldName)));
 
 	        return sqlColumns.ToString();

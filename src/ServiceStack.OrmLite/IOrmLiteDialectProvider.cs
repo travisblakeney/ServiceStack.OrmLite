@@ -23,6 +23,8 @@ namespace ServiceStack.OrmLite
 
 		bool UseUnicode { get; set; }
 
+		INamingStrategy NamingStrategy { get; set; }
+
 		string EscapeParam(object paramValue);
 
 		object ConvertDbValue(object value, Type type);
@@ -31,9 +33,11 @@ namespace ServiceStack.OrmLite
 
 		IDbConnection CreateConnection(string filePath, Dictionary<string, string> options);
 
-	    string GetTableNameDelimited(ModelDefinition modelDef);
+	    string GetQuotedTableName(ModelDefinition modelDef);
 
-        string GetNameDelimited(string columnName);
+		string GetQuotedColumnName(string columnName);
+        
+		string GetQuotedName(string columnName);
 
 		string GetColumnDefinition(
 			string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, 
@@ -48,22 +52,32 @@ namespace ServiceStack.OrmLite
 		
 		string ToInsertRowStatement( object objWithProperties, IDbCommand command);
 		string ToInsertRowStatement( object objWithProperties, IList<string>InsertFields, IDbCommand command);
-		
+
+	    IDbCommand CreateParameterizedInsertStatement(object objWithProperties, IDbConnection connection);
+	    IDbCommand CreateParameterizedInsertStatement(object objWithProperties, IList<string> insertFields,
+	                                                  IDbConnection connection);
+
+	    void ReParameterizeInsertStatement(object objWithProperties, IDbCommand command);
+	    void ReParameterizeInsertStatement(object objWithProperties, IList<string> insertFields, IDbCommand command);
+
 		string ToUpdateRowStatement(object objWithProperties);
 		string ToUpdateRowStatement(object objWithProperties, IList<string>UpdateFields);
+
+	    IDbCommand CreateParameterizedUpdateStatement(object objWithProperties, IDbConnection connection);
+	    IDbCommand CreateParameterizedUpdateStatement(object objWithProperties, IList<string> updateFields, IDbConnection connection);
 		
 		string ToDeleteRowStatement(object objWithProperties);
 		string ToDeleteStatement(Type tableType, string sqlFilter, params object[] filterParams);
 		
-		string ToExistStatement( Type fromTableType,
+		string ToExistStatement(Type fromTableType,
 			object objWithProperties,
 			string sqlFilter,
 			params object[] filterParams);
 		
 		string ToSelectFromProcedureStatement(object fromObjWithProperties,
-		                                          Type outputModelType,       
-		                                          string sqlFilter, 
-		                                          params object[] filterParams);
+			Type outputModelType,       
+			string sqlFilter, 
+			params object[] filterParams);
 		
 		string ToExecuteProcedureStatement(object objWithProperties);
 		
@@ -71,6 +85,7 @@ namespace ServiceStack.OrmLite
 		
 		List<string> ToCreateIndexStatements(Type tableType);
 		List<string> ToCreateSequenceStatements(Type tableType);
+		bool DoesTableExist(IDbCommand dbCmd, string tableName);
 		
 		string GetColumnNames(ModelDefinition modelDef);
 				

@@ -151,9 +151,9 @@ namespace ServiceStack.OrmLite
                 modelDef.FieldDefinitions.Add(fieldDefinition);
             }
 
-            modelDef.SqlSelectAllFromTable = "SELECT {0} FROM {1} ".Fmt(OrmLiteConfig.DialectProvider.GetColumnNames(modelDef),
-                                                                        OrmLiteConfig.DialectProvider.GetTableNameDelimited(
-                                                                            modelDef));
+		    modelDef.SqlSelectAllFromTable = "SELECT {0} FROM {1} ".Fmt(OrmLiteConfig.DialectProvider.GetColumnNames(modelDef),
+		                                                                OrmLiteConfig.DialectProvider.GetQuotedTableName(
+		                                                                    modelDef));
             Dictionary<Type, ModelDefinition> snapshot, newCache;
             do
             {

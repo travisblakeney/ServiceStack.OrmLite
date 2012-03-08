@@ -18,8 +18,8 @@ namespace ServiceStack.OrmLite
 			where T : new()
 		{
 			var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor<T>();
-			string sql= ev.Where(predicate).ToSelectStatement();
-			using (var reader = dbCmd.ExecReader(sql.ToString()))
+			string sql = ev.Where(predicate).ToSelectStatement();
+			using (var reader = dbCmd.ExecReader(sql))
 			{
 				return ConvertToList<T>(reader);
 			}
@@ -29,21 +29,31 @@ namespace ServiceStack.OrmLite
 			where T : new()
 		{
 			var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor<T>();
-			string sql= expression(ev).ToSelectStatement();
-			using (var reader = dbCmd.ExecReader(sql.ToString()))
+			string sql = expression(ev).ToSelectStatement();
+			using (var reader = dbCmd.ExecReader(sql))
 			{
 				return ConvertToList<T>(reader);
 			}
 		}
-
+		
+		
 		public static List<T> Select<T>(this IDbCommand dbCmd, SqlExpressionVisitor<T> expression)
 			where T : new()
 		{
-			string sql= expression.ToSelectStatement();
-			using (var reader = dbCmd.ExecReader(sql.ToString()))
+			string sql = expression.ToSelectStatement();
+			using (var reader = dbCmd.ExecReader(sql))
 			{
 				return ConvertToList<T>(reader);
 			}
+		}
+		
+		
+		public static T First<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate)
+			where T : new()
+		{
+			var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor<T>();
+			
+			return First<T>(dbCmd, ev.Where(predicate).Limit(1));
 		}
 		
 		
@@ -57,6 +67,15 @@ namespace ServiceStack.OrmLite
 					"{0}: '{1}' does not exist", typeof(T).Name, expression.WhereExpression));
 			}
 			return result;
+		}
+		
+		
+		public static T FirstOrDefault<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate)
+			where T : new()
+		{
+			var ev = OrmLiteConfig.DialectProvider.ExpressionVisitor<T>();
+			
+			return FirstOrDefault<T>(dbCmd, ev.Where(predicate).Limit(1));
 		}
 		
 		

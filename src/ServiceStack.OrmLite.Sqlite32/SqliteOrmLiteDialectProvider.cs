@@ -70,10 +70,10 @@ namespace ServiceStack.OrmLite.Sqlite
 			return new SQLiteConnection(connectionString);
 		}
 
-        public override string GetTableNameDelimited(ModelDefinition modelDef)
+        public override string GetQuotedTableName(ModelDefinition modelDef)
         {
             if (!modelDef.IsInSchema)
-                return base.GetTableNameDelimited(modelDef);
+                return base.GetQuotedTableName(modelDef);
 
             return string.Format("\"{0}_{1}\"", modelDef.Schema, modelDef.ModelName);
         }
@@ -128,6 +128,30 @@ namespace ServiceStack.OrmLite.Sqlite
 			dbCmd.CommandText = "SELECT last_insert_rowid()";
 			var result = dbCmd.ExecuteScalar();
 			return (long)result;
+		}
+
+		public override SqlExpressionVisitor<T> ExpressionVisitor<T>()
+		{
+			return new SqliteExpressionVisitor<T>();
+		}
+
+		public override bool DoesTableExist(IDbCommand dbCmd, string tableName)
+		{
+			var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
+				.SqlFormat(tableName);
+
+			dbCmd.CommandText = sql;
+			var result = dbCmd.GetLongScalar();
+
+			return result > 0;
+		}
+
+		public override string GetColumnDefinition(string fieldName, Type fieldType, bool isPrimaryKey, bool autoIncrement, bool isNullable, int? fieldLength, int? scale, string defaultValue)
+		{
+			var ret = base.GetColumnDefinition(fieldName, fieldType, isPrimaryKey, autoIncrement, isNullable, fieldLength, scale, defaultValue);
+			if (isPrimaryKey)
+				return ret.Replace(" BIGINT ", " INTEGER ");
+			return ret;
 		}
 	}
 }
