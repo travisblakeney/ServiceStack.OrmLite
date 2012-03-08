@@ -44,7 +44,6 @@ namespace ServiceStack.OrmLite
                                 string leftId = modelDef.Name + "Id";
                                 string rightId = tableDef.Name + "Id";
                                 
-                                // JOIN UserRole on User.UserId = UserRole.UserId JOIN Role ON UserRole.RoleId = Role.RoleId
                                 _joinStatement = string.Format(" JOIN {0} ON {1}.{2} = {0}.{2} JOIN {3} ON {0}.{4} = {3}.{4}", joinTableName, modelDef.Name, leftId, tableDef.Name, rightId);
                             }
                         }
